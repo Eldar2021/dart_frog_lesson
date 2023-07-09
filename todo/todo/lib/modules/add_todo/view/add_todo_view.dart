@@ -18,9 +18,7 @@ class _AddTodoViewState extends State<AddTodoView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AddTodoView'),
-      ),
+      appBar: AppBar(title: const Text('AddTodoView')),
       body: Form(
         key: formKey,
         child: Column(
@@ -32,7 +30,7 @@ class _AddTodoViewState extends State<AddTodoView> {
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   final todo = Todo(title: titleCtl.text, description: descCtl.text, isCompleted: false);
-                  context.read<TodoCubit>().addTodo(todo);
+                  context.read<TodoCubit>().addTodo(todo).whenComplete(() => Navigator.pop(context));
                 }
               },
               label: const Text('Add Todo'),

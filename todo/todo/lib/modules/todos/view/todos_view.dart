@@ -14,24 +14,27 @@ class TodosView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('TodosView'),
       ),
-      body: BlocBuilder<TodoCubit, TodoState>(
-        builder: (context, state) {
-          return switch (state.status) {
-            FetchStatus.initial || FetchStatus.loading => const LoadingWidget(),
-            FetchStatus.success => TodosList(state.todos ?? []),
-            FetchStatus.error => ErrorView(state.errorText ?? ''),
-          };
-        },
+      body: RefreshIndicator(
+        onRefresh: context.read<TodoCubit>().getTodos,
+        child: BlocBuilder<TodoCubit, TodoState>(
+          builder: (context, state) {
+            return switch (state.status) {
+              FetchStatus.initial || FetchStatus.loading => const LoadingWidget(),
+              FetchStatus.success => TodosList(state.todos ?? []),
+              FetchStatus.error => ErrorView(state.errorText ?? ''),
+            };
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {
-          Navigator.push<void>(
+        onPressed: () async {
+          await Navigator.push<void>(
             context,
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) => const AddTodoView(),
-            ),
+            MaterialPageRoute<void>(builder: (BuildContext context) => const AddTodoView()),
           );
+          // ignore: use_build_context_synchronously
+          await context.read<TodoCubit>().getTodos();
         },
       ),
     );
@@ -50,13 +53,20 @@ class TodosList extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         final todo = todos[index];
         return Card(
-          child: SwitchListTile(
-            onChanged: (bool value) {
-              // todo.isCompleted = value;
+          child: Dismissible(
+            background: ColoredBox(color: Theme.of(context).colorScheme.error),
+            onDismissed: (direction) async {
+              await context.read<TodoCubit>().delete(todo);
             },
-            value: todo.isCompleted,
-            title: Text(todo.title),
-            subtitle: Text(todo.description),
+            key: Key('${todo.id}'),
+            child: SwitchListTile(
+              onChanged: (bool value) async {
+                await context.read<TodoCubit>().putTodo(todo);
+              },
+              value: todo.isCompleted,
+              title: Text(todo.title),
+              subtitle: Text(todo.description),
+            ),
           ),
         );
       },

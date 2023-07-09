@@ -25,6 +25,17 @@ class TodoState extends Equatable {
       errorText: errorText ?? this.errorText,
     );
   }
+
+  List<Todo>? changeTodos(Todo oldTodo, Todo newTodo) {
+    final index = todos?.indexOf(oldTodo);
+    if (index != -1) todos?[index ?? 0] = newTodo;
+    return todos;
+  }
+
+  List<Todo>? deleteTodo(Todo todo) {
+    todos?.remove(todo);
+    return todos;
+  }
 }
 
 enum FetchStatus { initial, loading, success, error }

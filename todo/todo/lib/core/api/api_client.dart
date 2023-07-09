@@ -36,6 +36,34 @@ class ApiService {
     }
   }
 
+  Future<(String? success, String status)> put<T>(String url, Map<String, dynamic> body) async {
+    try {
+      final uri = Uri.parse(url);
+      final response = await _client.put(uri, headers: header, body: jsonEncode(body));
+      if (response.statusCode != HttpStatus.ok && response.statusCode != HttpStatus.created) {
+        return (null, '${response.statusCode}');
+      }
+      return ('Success', response.statusCode.toString());
+    } catch (e, s) {
+      return (null, s.toString());
+    }
+  }
+
+  Future<(String? success, String status)> delete<T>(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final response = await _client.delete(uri, headers: header);
+      if (response.statusCode != HttpStatus.ok &&
+          response.statusCode != HttpStatus.created &&
+          response.statusCode != HttpStatus.noContent) {
+        return (null, '${response.statusCode}');
+      }
+      return ('Success', response.statusCode.toString());
+    } catch (e, s) {
+      return (null, s.toString());
+    }
+  }
+
   Future<(T?, String status)> getType<T>(String url, {required FromJson<T> fromJson}) async {
     try {
       final (data, status) = await get<Map<String, dynamic>>(url);
